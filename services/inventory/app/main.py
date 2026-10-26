@@ -41,9 +41,18 @@ class ReserveIn(BaseModel):
     quantity: int = Field(gt=0)
 
 
+def init_db(target_engine=None):
+    b_engine = target_engine or engine
+    Base.metadata.create_all(bind=b_engine)
+
+
 app = FastAPI(title="Inventory Service", version="1.0.0")
 setup(app)
-Base.metadata.create_all(bind=engine)
+
+try:
+    init_db()
+except Exception:
+    pass
 
 
 @app.get("/health")

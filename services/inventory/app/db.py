@@ -1,14 +1,22 @@
 import os
 from sqlalchemy import create_engine
 from sqlalchemy.orm import DeclarativeBase, sessionmaker
+from sqlalchemy.pool import StaticPool
 
-DATABASE_URL = os.getenv(
-    "DATABASE_URL",
-    "postgresql+psycopg://inventory_user:inventory_pass@localhost:5432/inventory_db",
-)
+DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///inventory.db")
 
 if DATABASE_URL.startswith("sqlite"):
-    engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
+    if ":memory:" in DATABASE_URL:
+        engine = create_engine(
+            DATABASE_URL,
+            connect_args={"check_same_thread": False},
+            poolclass=StaticPool,
+        )
+    else:
+        engine = create_engine(
+            DATABASE_URL,
+            connect_args={"check_same_thread": False},
+        )
 else:
     engine = create_engine(DATABASE_URL, pool_pre_ping=True)
 
