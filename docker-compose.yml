@@ -1,0 +1,57 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_PASSWORD: adminpass
+      POSTGRES_USER: postgres
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./scripts/init-databases.sh:/docker-entrypoint-initdb.d/init-databases.sh:ro
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 3s
+      retries: 20
+
+  inventory:
+    build: ./services/inventory
+    environment:
+      DATABASE_URL: postgresql+psycopg://inventory_user:inventory_pass@postgres:5432/inventory_db
+    ports: ["8001:8000"]
+    depends_on:
+      postgres: {condition: service_healthy}
+
+  order:
+    build: ./services/order
+    environment:
+      DATABASE_URL: postgresql+psycopg://order_user:order_pass@postgres:5432/order_db
+      INVENTORY_URL: http://inventory:8000
+      PAYMENT_URL: http://payment:8000
+      NOTIFICATION_URL: http://notification:8000
+      PAYMENT_TIMEOUT: '0.7'
+    ports: ["8002:8000"]
+    depends_on:
+      postgres: {condition: service_healthy}
+      inventory: {condition: service_started}
+      payment: {condition: service_started}
+      notification: {condition: service_started}
+
+  payment:
+    build: ./services/payment
+    environment:
+      DATABASE_URL: postgresql+psycopg://payment_user:payment_pass@postgres:5432/payment_db
+    ports: ["8003:8000"]
+    depends_on:
+      postgres: {condition: service_healthy}
+
+  notification:
+    build: ./services/notification
+    environment:
+      DATABASE_URL: postgresql+psycopg://notification_user:notification_pass@postgres:5432/notification_db
+    ports: ["8004:8000"]
+    depends_on:
+      postgres: {condition: service_healthy}
+
+volumes:
+  pgdata:
