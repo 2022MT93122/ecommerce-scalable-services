@@ -1,0 +1,56 @@
+======================================================================
+POST-TEST SQL DATABASE STATE PROOF (Challenge 1: Concurrency)
+Captured: 2026-10-26T05:50:34Z
+Database: inventory_db (products & holds tables)
+Owner: Dr. Sunanda Pandita
+======================================================================
+
+1. QUERY: Final State of Contended Resource (products table)
+----------------------------------------------------------------------
+SQL: SELECT id, name, price_cents, available FROM products WHERE id = 1;
+
+Result:
++----+----------------------------------------+-------------+-----------+
+| id | name                                   | price_cents | available |
++----+----------------------------------------+-------------+-----------+
+|  1 | Mechanical Keyboard (Batch-b06e0b)     |      200000 |         0 |
++----+----------------------------------------+-------------+-----------+
+Row count: 1 row.
+Invariant Observation: available stock count is EXACTLY 0. Stock NEVER dropped below 0.
+
+
+2. QUERY: Active Holds Committed (holds table)
+----------------------------------------------------------------------
+SQL: SELECT id, order_id, product_id, quantity, status FROM holds WHERE product_id = 1;
+
+Result:
++----+----------------------------+------------+----------+--------+
+| id | order_id                   | product_id | quantity | status |
++----+----------------------------+------------+----------+--------+
+|  1 | ord-burst-01-e2494ef5      |          1 |        1 | HELD   |
+|  2 | ord-burst-02-1954937b      |          1 |        1 | HELD   |
+|  3 | ord-burst-05-f8e6ad6c      |          1 |        1 | HELD   |
+|  4 | ord-burst-08-119fd8d2      |          1 |        1 | HELD   |
+|  5 | ord-burst-09-42c17c05      |          1 |        1 | HELD   |
++----+----------------------------+------------+----------+--------+
+Row count: 5 rows.
+
+
+3. SUMMARY AUDIT:
+----------------------------------------------------------------------
+Initial Stock                   : 5
+Competing Concurrent Requests   : 20
+Committed Reservation Rows      : 5
+Rejected Requests (OUT_OF_STOCK): 15
+Remaining Stock in Database     : 0
+Oversold Units                  : 0
+
+CONCLUSION:
+The atomic conditional UPDATE statement:
+  UPDATE products
+  SET available = available - :qty
+  WHERE id = :product_id AND available >= :qty
+  RETURNING id, available;
+executed within single database transactions completely eliminated read-modify-write race conditions.
+Only 5 reservations succeeded and 15 received controlled 409 rejections.
+The system satisfies BR1 and the evaluation criteria for Challenge 1.

@@ -1,0 +1,48 @@
+======================================================================
+CHALLENGE 1: CONCURRENT STOCK RESERVATION TEST
+Timestamp: 2026-10-26T05:50:17.527502+00:00
+Target Service: http://localhost:8001
+======================================================================
+[*] Health Check: HTTP 200 -> {'status': 'ok', 'service': 'inventory'}
+
+[+] Created Test Product ID: 1
+    Name: Mechanical Keyboard (Batch-b06e0b)
+    Initial Stock: 5 units
+    Price: INR 2000.00
+
+[*] Dispatching 20 concurrent reservation requests (1 unit each)...
+----------------------------------------------------------------------
+  Request #01 | Order: ord-burst-01-e2494ef5 | HTTP 201 (SUCCESS) in 20.9ms
+  Request #02 | Order: ord-burst-02-1954937b | HTTP 201 (SUCCESS) in 23.1ms
+  Request #05 | Order: ord-burst-05-f8e6ad6c | HTTP 201 (SUCCESS) in 24.1ms
+  Request #08 | Order: ord-burst-08-119fd8d2 | HTTP 201 (SUCCESS) in 26.6ms
+  Request #09 | Order: ord-burst-09-42c17c05 | HTTP 201 (SUCCESS) in 27.4ms
+  Request #14 | Order: ord-burst-14-3ae9cc3f | HTTP 409 (REJECTED (OUT_OF_STOCK)) in 25.2ms
+  Request #13 | Order: ord-burst-13-ae266d15 | HTTP 409 (REJECTED (OUT_OF_STOCK)) in 26.4ms
+  Request #19 | Order: ord-burst-19-f7ec7636 | HTTP 409 (REJECTED (OUT_OF_STOCK)) in 23.3ms
+  Request #11 | Order: ord-burst-11-3e4501ac | HTTP 409 (REJECTED (OUT_OF_STOCK)) in 27.6ms
+  Request #10 | Order: ord-burst-10-874fba19 | HTTP 409 (REJECTED (OUT_OF_STOCK)) in 27.7ms
+  Request #07 | Order: ord-burst-07-3a3038db | HTTP 409 (REJECTED (OUT_OF_STOCK)) in 31.0ms
+  Request #06 | Order: ord-burst-06-318046df | HTTP 409 (REJECTED (OUT_OF_STOCK)) in 31.0ms
+  Request #17 | Order: ord-burst-17-cdaccc23 | HTTP 409 (REJECTED (OUT_OF_STOCK)) in 26.1ms
+  Request #12 | Order: ord-burst-12-60dc0759 | HTTP 409 (REJECTED (OUT_OF_STOCK)) in 28.6ms
+  Request #20 | Order: ord-burst-20-4ac29e15 | HTTP 409 (REJECTED (OUT_OF_STOCK)) in 24.9ms
+  Request #16 | Order: ord-burst-16-d86261d1 | HTTP 409 (REJECTED (OUT_OF_STOCK)) in 27.3ms
+  Request #15 | Order: ord-burst-15-315c903a | HTTP 409 (REJECTED (OUT_OF_STOCK)) in 28.1ms
+  Request #18 | Order: ord-burst-18-e2788c74 | HTTP 409 (REJECTED (OUT_OF_STOCK)) in 26.5ms
+  Request #04 | Order: ord-burst-04-b42d9b93 | HTTP 409 (REJECTED (OUT_OF_STOCK)) in 33.9ms
+  Request #03 | Order: ord-burst-03-9828f79b | HTTP 409 (REJECTED (OUT_OF_STOCK)) in 45.3ms
+
+======================================================================
+CONCURRENCY TEST SUMMARY & INVARIANT VERIFICATION
+======================================================================
+Total Requests Dispatched : 20
+Successful Reservations   : 5  (Expected: 5)
+Rejected Reservations     : 15 (Expected: 15)
+Unexpected Responses      : 0    (Expected: 0)
+Initial Product Stock     : 5
+Final Available Stock     : 0  (Expected: 0)
+
+[✓] PASS: All concurrency invariants verified!
+[✓] BR1 Enforced: Stock never dropped below zero (No overselling).
+======================================================================
