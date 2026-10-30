@@ -1,0 +1,12 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - 00-namespace.yaml
+  - 01-postgres-init.yaml
+  - 02-postgres.yaml
+  - 03-inventory.yaml
+  - 04-payment.yaml
+  - 05-notification.yaml
+  - 06-order.yaml
+
