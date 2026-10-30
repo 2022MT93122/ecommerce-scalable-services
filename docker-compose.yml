@@ -21,6 +21,11 @@ services:
     ports: ["8001:8000"]
     depends_on:
       postgres: {condition: service_healthy}
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
 
   order:
     build: ./services/order
@@ -33,9 +38,14 @@ services:
     ports: ["8002:8000"]
     depends_on:
       postgres: {condition: service_healthy}
-      inventory: {condition: service_started}
-      payment: {condition: service_started}
-      notification: {condition: service_started}
+      inventory: {condition: service_healthy}
+      payment: {condition: service_healthy}
+      notification: {condition: service_healthy}
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
 
   payment:
     build: ./services/payment
@@ -44,6 +54,11 @@ services:
     ports: ["8003:8000"]
     depends_on:
       postgres: {condition: service_healthy}
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
 
   notification:
     build: ./services/notification
@@ -52,6 +67,11 @@ services:
     ports: ["8004:8000"]
     depends_on:
       postgres: {condition: service_healthy}
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
 
 volumes:
   pgdata:
