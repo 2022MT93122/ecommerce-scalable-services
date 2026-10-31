@@ -10,7 +10,7 @@ A distributed microservices-based e-commerce order processing system demonstrati
 |---|---|---|---|
 | **Dr. Sunanda Pandita (P1)** | `2025tm93132@wilp.bits-pilani.ac.in` / `@DrSunandaPandita` | **Inventory Service** (Catalog, stock holds, atomic conditional decrement, confirm/release) | **Challenge 1: Concurrency** (20-way parallel request harness, BR1 & BR2 unit tests, SQL dump proof) |
 | **Tarun (P2)** | `2022MT93122` | **Order Service** (Checkout orchestration, state machine, idempotency persistence) | **Challenge 2: Idempotency** (Replay & duplicate protection tests) |
-| **Meghana (P3)** | `2022MT93121` | **Payment & Notification Mocks** (Idempotent charges, fault simulation, delivery logs) | **Challenge 3A: Resilience** (Timeout, bounded retry with backoff, reconciliation) |
+| **Meghana (P3)** | `2025TM93231` | **Payment & Notification Mocks** (Idempotent charges, fault simulation, delivery logs) | **Challenge 3A: Resilience** (Timeout, bounded retry with backoff, reconciliation) |
 
 ---
 
