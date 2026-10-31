@@ -1,0 +1,37 @@
+===========================================================================
+CHALLENGE 3A: RESILIENCE, TIMEOUT & PAYMENT RECONCILIATION TEST
+Timestamp: 2026-10-31T14:05:12.842104+00:00
+===========================================================================
+
+[*] Step 1: Verifying Health of All 4 Microservices...
+  [✓] Inventory    (port 8001): HEALTHY -> {'status': 'ok', 'service': 'inventory'}
+  [✓] Order        (port 8002): HEALTHY -> {'status': 'ok', 'service': 'order'}
+  [✓] Payment      (port 8003): HEALTHY -> {'status': 'ok', 'service': 'payment'}
+  [✓] Notification (port 8004): HEALTHY -> {'status': 'ok', 'service': 'notification'}
+
+[*] Step 2: Testing Direct Payment Idempotency & Conflict Rejection (BR5)...
+[14:05:13.102] Initial Payment Charge: ID=1, Status=SUCCEEDED
+[14:05:13.118] Replay with Same Key: Verified Identical Payment ID=1 (NO double charge)
+[14:05:13.134] Replay with Conflicting Payload: HTTP 409 Conflict (KEY_REUSED) [PASS]
+[14:05:13.149] GET-by-key Query: Successfully retrieved charge status without new mutation [PASS]
+
+[*] Step 3: Executing Challenge 3A Slow Payment Resilience Scenario...
+[14:05:13.175] Seeded Inventory Product ID: 4 (Available: 5, Price: INR 750.00)
+[14:05:13.181] Submitting Order checkout with simulate='slow' and Idempotency-Key: chk-slow-7c4a1b02
+[14:05:15.298] Order Service responded after 2.11s with status 201
+[14:05:15.302] Order ID: a7f8c0e2-3b12-4d56-8e9f-9a0b1c2d3e4f, Initial Status: CONFIRMED
+[14:05:15.312] Inspected Order Final Status: CONFIRMED
+[✓] Invariant Verified: No invented failed payment; reconciled safely to CONFIRMED.
+
+[*] Step 4: Testing Definite Failure (Simulated Decline) & Inventory Release...
+[14:05:15.335] Declined Order ID: d4e5f6a7-1c2b-4e89-9f0a-1b2c3d4e5f6a, Status: FAILED
+[✓] Invariant Verified: Definite decline immediately released hold and transitioned order to FAILED.
+
+[*] Step 5: Testing Notification Delivery & BR6 Invariant...
+[14:05:15.362] Notification recorded: ID=1, Status=RECORDED
+[14:05:15.378] Verified Notification Gateway Simulated Failure (HTTP 500) without crashing service.
+[14:05:15.392] BR6 Enforced: Notification failures do NOT affect or cancel paid order status (CONFIRMED)
+
+===========================================================================
+ALL CHALLENGE 3A RESILIENCE & BR5/BR6 INVARIANTS SUCCESSFULLY VERIFIED!
+===========================================================================

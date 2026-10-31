@@ -42,3 +42,41 @@ Each rule is enforced at the database or transactional boundary and validated by
      - If `hold.status == "CONFIRMED"`: Immediate rejection with `ValueError("Confirmed stock cannot be released")` mapped to HTTP `409 Conflict`.
      - If `hold.status == "RELEASED"`: Idempotent no-op returning `200 OK` (stock is NOT incremented twice).
      - If `hold.status == "HELD"`: Product available stock is incremented by `hold.quantity`, status is updated to `RELEASED`, and transaction commits.
+
+
+---
+
+## Detailed Rule Specifications (Payment & Notification Domains - Meghana Toutam)
+
+### BR5: Payment Key Charges Once (Idempotency and Conflict Detection)
+- **Problem Statement**: In distributed networks, transient timeouts frequently trigger automated client retries. If the original charge succeeded at the payment processor but the acknowledgment was lost in transit, retrying the charge naively causes customers to be billed multiple times. Conversely, reusing a previous payment key with altered transaction details (e.g., higher amount or different order) indicates transaction spoofing or cache corruption.
+- **Enforcement Level**:
+  1. Unique Constraint on Idempotency Key:
+     ```sql
+     CREATE UNIQUE INDEX ix_charges_idempotency_key ON charges(idempotency_key);
+     ```
+  2. Payload Fingerprinting:
+     Incoming payloads are canonically serialized (`json.dumps(..., sort_keys=True)`) and hashed via SHA-256:
+     $$\text{fingerprint} = \text{SHA-256}(\text{canonical\_json}(\text{payload}))$$
+  3. Strict Conflict Resolution:
+     - If `idempotency_key` is unseen: Insert new record with status (`SUCCEEDED` or `DECLINED`), fingerprint, and amount; commit and return HTTP `201 Created`.
+     - If `idempotency_key` exists and incoming fingerprint == stored fingerprint: Return existing persisted record with HTTP `200/201`. No secondary payment processing occurs.
+     - If `idempotency_key` exists and incoming fingerprint != stored fingerprint: Immediately reject with HTTP `409 Conflict` (`KEY_REUSED`, "Different payload").
+  4. Safe GET Reconciliation:
+     `GET /api/v1/payments/by-key/{key}` is strictly a read-only query. It guarantees recovery of existing transaction states after network timeouts without causing mutations.
+
+### BR6: Notification Failure Cannot Cancel Paid Order
+- **Problem Statement**: Notifications (email, SMS, push) depend on third-party carrier gateways that have lower SLA availability than primary core banking systems. If a customer's payment succeeds and warehouse inventory is reserved, failing to deliver a confirmation SMS must never roll back or abort the entire customer order.
+- **Enforcement Level**:
+  1. Decoupled Best-Effort Delivery:
+     In `order/app/main.py`, the notification dispatch is isolated in `notify_best_effort()`:
+     ```python
+     try:
+         downstream("POST", f"{NOTIFICATION}/api/v1/notifications", request_id, json={...})
+     except httpx.HTTPError as exc:
+         logger.warning(f"Notification gateway unavailable: {exc}. Non-critical failure.")
+     ```
+  2. Transaction Finality:
+     Once payment succeeds and inventory hold is confirmed, the order is immutably committed to `CONFIRMED`.
+  3. Resilient Outbox Simulation:
+     The notification service logs message payloads in `messages` table with status `RECORDED` or simulated carrier drop (`500`). In production, this powers an asynchronous retry worker without placing the customer's checkout on the critical synchronous path.

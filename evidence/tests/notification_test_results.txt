@@ -1,0 +1,18 @@
+============================= test session starts ==============================
+platform win32 -- Python 3.11.9, pytest-8.3.5, pluggy-1.5.0
+cachedir: .pytest_cache
+rootdir: C:\Meghana\ecommerce-scalable-services\services\notification
+configfile: pytest.ini
+plugins: anyio-4.8.0
+collecting ... collected 8 items
+
+tests/test_notification_rules.py::test_health_check PASSED                [ 12%]
+tests/test_notification_rules.py::test_create_notification_success PASSED [ 25%]
+tests/test_notification_rules.py::test_notification_idempotency_same_order PASSED [ 37%]
+tests/test_notification_rules.py::test_get_notification_by_id PASSED     [ 50%]
+tests/test_notification_rules.py::test_get_notification_by_order PASSED  [ 62%]
+tests/test_notification_rules.py::test_get_notification_not_found_404 PASSED [ 75%]
+tests/test_notification_rules.py::test_simulated_notification_failure_500 PASSED [ 87%]
+tests/test_notification_rules.py::test_simulated_env_var_notification_failure PASSED [100%]
+
+============================== 8 passed in 0.35s ===============================

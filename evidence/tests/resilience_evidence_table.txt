@@ -1,0 +1,26 @@
+========================================================================================================
+E-COMMERCE MICROSERVICES: BUSINESS RULES & RESILIENCE EVIDENCE MATRIX
+BITS Pilani WILP | Scalable Services (SEZG583)
+Owners: Tarun (Order), Dr. Sunanda Pandita (Inventory), Meghana Toutam (Payment & Notification)
+========================================================================================================
+
+Rule ID | Invariant Statement                      | Service      | Enforcement Mechanism          | Verified Test / Evidence File
+--------|------------------------------------------|--------------|--------------------------------|---------------------------------------------
+BR1     | Stock Never Drops Below Zero             | Inventory    | Atomic UPDATE ... WHERE >= qty | scripts/concurrency.py, evidence/challenge-1-concurrency/
+BR2     | Confirmed Hold Cannot Be Released        | Inventory    | State check on CONFIRMED hold  | services/inventory/tests/test_business_rules.py
+BR3     | Duplicate Checkout Key Means One Order   | Order        | DB UNIQUE index on key + hash  | scripts/idempotency.py, test_e2e.py
+BR4     | Key With Different Payload Returns 409   | Order        | SHA-256 fingerprint validation | scripts/idempotency.py
+BR5     | Payment Key Charges Exactly Once         | Payment      | DB UNIQUE index on idemp_key   | services/payment/tests/test_payment_rules.py, scripts/resilience.py
+BR6     | Notification Failure Does Not Rollback   | Notification | Best-effort async delivery     | services/notification/tests/test_notification_rules.py, scripts/resilience.py
+
+CHALLENGE 3A RESILIENCE SCENARIOS SUMMARY:
+--------------------------------------------------------------------------------------------------------
+Scenario                | Fault Injected             | Expected Behavior               | Verified Result
+------------------------|----------------------------|---------------------------------|---------------------------------------------
+Payment Transient Delay | simulate="slow" (2.0s sleep)| Order timeout at 0.7s, retries, | PASS: GET-by-key recovered charge, order
+                        |                            | safe GET-by-key reconciliation  | confirmed with zero duplicate charge.
+Payment Definite Reject | simulate="decline"         | Immediate rollback of stock hold| PASS: Hold transitioned to RELEASED, order
+                        |                            | and order set to FAILED         | set to FAILED.
+Notification Downtime   | simulate="failure" (500)   | Non-blocking error logging      | PASS: Confirmed order not cancelled; user
+                        |                            | without transaction abort       | notification marked for retry.
+========================================================================================================

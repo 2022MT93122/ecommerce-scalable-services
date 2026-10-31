@@ -10,7 +10,11 @@ A distributed microservices-based e-commerce order processing system demonstrati
 |---|---|---|---|
 | **Dr. Sunanda Pandita (P1)** | `2025tm93132@wilp.bits-pilani.ac.in` / `@DrSunandaPandita` | **Inventory Service** (Catalog, stock holds, atomic conditional decrement, confirm/release) | **Challenge 1: Concurrency** (20-way parallel request harness, BR1 & BR2 unit tests, SQL dump proof) |
 | **Tarun (P2)** | `2022MT93122` | **Order Service** (Checkout orchestration, state machine, idempotency persistence) | **Challenge 2: Idempotency** (Replay & duplicate protection tests) |
-| **Meghana (P3)** | `2025TM93231` | **Payment & Notification Mocks** (Idempotent charges, fault simulation, delivery logs) | **Challenge 3A: Resilience** (Timeout, bounded retry with backoff, reconciliation) |
+| **Meghana Toutam (P3)** | `2025tm93231@wilp.bits-pilani.ac.in` / `@MeghanaToutam15` | **Payment & Notification Mocks** (Idempotent charges, fault simulation, delivery logs) | **Challenge 3A: Resilience** (Timeout, bounded retry with backoff, reconciliation, BR5 & BR6) |
+
+### Detailed Individual Deliverables Dossiers
+- **Dr. Sunanda Pandita**: [`docs/SUNANDA_PANDITA_DELIVERABLES.md`](docs/SUNANDA_PANDITA_DELIVERABLES.md)
+- **Meghana Toutam**: [`docs/MEGHANA_TOUTAM_DELIVERABLES.md`](docs/MEGHANA_TOUTAM_DELIVERABLES.md)
 
 ---
 
@@ -26,7 +30,17 @@ A distributed microservices-based e-commerce order processing system demonstrati
 
 ---
 
-## 3. Quick Start with Docker Compose
+## 3. Interactive Swagger / OpenAPI Documentation
+
+Each microservice automatically exposes an interactive Swagger UI for API exploration and live execution:
+- **Payment Service Swagger**: [http://localhost:8003/docs](http://localhost:8003/docs)
+- **Notification Service Swagger**: [http://localhost:8004/docs](http://localhost:8004/docs)
+- **Inventory Service Swagger**: [http://localhost:8001/docs](http://localhost:8001/docs)
+- **Order Service Swagger**: [http://localhost:8002/docs](http://localhost:8002/docs)
+
+---
+
+## 4. Quick Start with Docker Compose
 
 1. **Start all services and databases**:
    ```bash
@@ -39,17 +53,12 @@ A distributed microservices-based e-commerce order processing system demonstrati
    curl http://localhost:8003/health   # Payment
    curl http://localhost:8004/health   # Notification
    ```
-3. **Interactive Swagger / OpenAPI Documentation**:
-   - Inventory API: http://localhost:8001/docs
-   - Orders API: http://localhost:8002/docs
-   - Payments API: http://localhost:8003/docs
-   - Notifications API: http://localhost:8004/docs
 
 ---
 
-## 4. Running Tests & Challenge Scripts
+## 5. Running Tests & Challenge Scripts
 
-Install test dependencies:
+Install script dependencies:
 ```bash
 pip install -r scripts/requirements.txt
 ```
@@ -66,17 +75,25 @@ python scripts/concurrency.py
 python scripts/idempotency.py
 ```
 
-### Challenge 3A: Resilience Test
+### Challenge 3A: Resilience & Payment Reconciliation Test (Meghana Toutam)
 ```bash
 python scripts/resilience.py
 ```
+- Invariants: BR5 idempotent payment replay, payload conflict rejection, safe timeout handling, GET-by-key reconciliation, and BR6 non-blocking notification failure.
 
 ### End-to-End Main Checkout Flow
 ```bash
 python scripts/e2e.py
 ```
 
-### Service Unit Tests
+### Service Unit Test Suites
 ```bash
+# Inventory Service (BR1, BR2)
 cd services/inventory && pytest -v
+
+# Payment Service (BR5, Idempotency, Simulation, Reconciliation)
+cd services/payment && pytest -v
+
+# Notification Service (BR6, Best-effort Delivery, Gateway Failure)
+cd services/notification && pytest -v
 ```

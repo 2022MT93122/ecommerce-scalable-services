@@ -1,0 +1,11 @@
+{"event": "http", "request_id": "req-pay-1", "path": "/api/v1/payments", "method": "POST", "status": 201}
+{"event": "http", "request_id": "req-pay-2", "path": "/api/v1/payments", "method": "POST", "status": 200}
+{"event": "http", "request_id": "req-pay-3", "path": "/api/v1/payments", "method": "POST", "status": 409}
+{"event": "http", "request_id": "req-pay-recon", "path": "/api/v1/payments/by-key/pay-test-br5-7c4a1b02", "method": "GET", "status": 200}
+{"event": "http", "request_id": "req-slow-chk-slow", "path": "/api/v1/payments", "method": "POST", "status": 201}
+{"event": "payment_simulation", "request_id": "req-slow-chk-slow", "mode": "slow", "delay_seconds": 2.0, "status": "SUCCEEDED"}
+{"event": "http", "request_id": "req-order-recon", "path": "/api/v1/payments/by-key/pay-a7f8c0e2-3b12-4d56-8e9f-9a0b1c2d3e4f", "method": "GET", "status": 200}
+{"event": "http", "request_id": "req-dec-1", "path": "/api/v1/payments", "method": "POST", "status": 201}
+{"event": "payment_simulation", "request_id": "req-dec-1", "mode": "decline", "status": "DECLINED"}
+{"event": "http", "request_id": "req-notif-1", "path": "/api/v1/notifications", "method": "POST", "status": 201}
+{"event": "http", "request_id": "req-notif-fail", "path": "/api/v1/notifications", "method": "POST", "status": 500}

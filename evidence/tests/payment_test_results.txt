@@ -1,0 +1,20 @@
+============================= test session starts ==============================
+platform win32 -- Python 3.11.9, pytest-8.3.5, pluggy-1.5.0
+cachedir: .pytest_cache
+rootdir: C:\Meghana\ecommerce-scalable-services\services\payment
+configfile: pytest.ini
+plugins: anyio-4.8.0
+collecting ... collected 10 items
+
+tests/test_payment_rules.py::test_health_check PASSED                    [ 10%]
+tests/test_payment_rules.py::test_successful_payment_charge PASSED       [ 20%]
+tests/test_payment_rules.py::test_br5_payment_idempotency_same_key_replays_charge PASSED [ 30%]
+tests/test_payment_rules.py::test_br5_payment_conflict_different_payload_returns_409 PASSED [ 40%]
+tests/test_payment_rules.py::test_payment_simulation_decline PASSED      [ 50%]
+tests/test_payment_rules.py::test_payment_simulation_env_var_reject PASSED [ 60%]
+tests/test_payment_rules.py::test_reconciliation_get_by_key_success PASSED [ 70%]
+tests/test_payment_rules.py::test_reconciliation_get_by_key_not_found_404 PASSED [ 80%]
+tests/test_payment_rules.py::test_get_payment_by_id PASSED               [ 90%]
+tests/test_payment_rules.py::test_br5_concurrent_duplicate_charges PASSED [100%]
+
+============================== 10 passed in 0.42s ==============================
