@@ -1,0 +1,12 @@
+Verification: four local Uvicorn processes, isolated SQLite databases; not Docker/PostgreSQL.
+Command: python services/order/scripts/verify.py (URLs on ports 18001-18004)
+2026-11-01T17:21:46.112929+00:00
+success simultaneous: [(201, {'order_id': '106ef1ef-9d86-42e5-ad6a-e5981f46a9d2', 'status': 'CONFIRMED', 'hold_id': 1}), (201, {'order_id': '106ef1ef-9d86-42e5-ad6a-e5981f46a9d2', 'status': 'CONFIRMED', 'hold_id': 1})]
+decline simultaneous: [(201, {'order_id': '35674be1-1cf9-4fe8-9a2f-2d9d4430107a', 'status': 'FAILED', 'hold_id': 2}), (201, {'order_id': '35674be1-1cf9-4fe8-9a2f-2d9d4430107a', 'status': 'FAILED', 'hold_id': 2})]
+slow simultaneous: [(201, {'order_id': '154a0a5b-e7be-4372-b009-582d7a5c26b3', 'status': 'CONFIRMED', 'hold_id': 3}), (201, {'order_id': '154a0a5b-e7be-4372-b009-582d7a5c26b3', 'status': 'CONFIRMED', 'hold_id': 3})]
+PASS: identical concurrent/replayed checkout, payload conflict, compensation and slow-payment recovery
+2026-11-01T17:21:48.657639+00:00
+success simultaneous: [(202, {'order_id': 'e37e81da-96c1-4b17-8578-861af9625d17', 'status': 'PAYMENT_PENDING', 'hold_id': 4}), (202, {'order_id': 'e37e81da-96c1-4b17-8578-861af9625d17', 'status': 'PAYMENT_PENDING', 'hold_id': 4})]
+Restart Payment and run --reconcile e37e81da-96c1-4b17-8578-861af9625d17
+2026-11-01T17:21:49.936352+00:00
+Reconciled: 200 {'order_id': 'e37e81da-96c1-4b17-8578-861af9625d17', 'status': 'CONFIRMED', 'hold_id': 4}

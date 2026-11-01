@@ -2,6 +2,8 @@ import json
 import logging
 import uuid
 from fastapi import Request
+from fastapi.exceptions import RequestValidationError
+from starlette.exceptions import HTTPException
 from fastapi.responses import JSONResponse
 
 logging.basicConfig(level=logging.INFO, format="%(message)s")
@@ -45,3 +47,28 @@ def setup(app):
                 "request_id": getattr(request.state, "request_id", ""),
             },
         )
+
+    def error(request, status, code, message):
+        return JSONResponse(status_code=status, content={
+            "error": {"code": code, "message": message},
+            "request_id": getattr(request.state, "request_id", "")})
+
+    @app.exception_handler(HTTPException)
+    async def http_error(request, exc):
+        if isinstance(exc.detail, dict) and "error" in exc.detail:
+            detail = exc.detail["error"]
+            return error(request, exc.status_code, detail["code"], detail["message"])
+        return error(request, exc.status_code, f"HTTP_{exc.status_code}", str(exc.detail))
+
+    @app.exception_handler(RequestValidationError)
+    async def validation_error(request, exc):
+        message = "; ".join(f"{'.'.join(map(str, e['loc']))}: {e['msg']}" for e in exc.errors())
+        return error(request, 422, "VALIDATION_ERROR", message)
+
+    @app.exception_handler(Exception)
+    async def unexpected_error(request, exc):
+        logger.exception(json.dumps({"event": "unhandled_error", "request_id": request.state.request_id}))
+        response = error(request, 500, "INTERNAL_ERROR", "Internal service error")
+        response.headers["X-Request-ID"] = request.state.request_id
+        response.headers["X-Correlation-ID"] = request.state.request_id
+        return response
